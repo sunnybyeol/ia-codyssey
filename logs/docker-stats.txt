@@ -1,0 +1,3 @@
+CONTAINER ID   NAME            CPU %     MEM USAGE / LIMIT     MEM %     NET I/O           BLOCK I/O    PIDS
+bd8d33d59ded   dev-web         0.00%     15.2MiB / 7.598GiB    0.20%     0B / 0B           0B / 4.1kB   17
+1328b30bbe71   quirky_wilson   0.00%     15.03MiB / 7.598GiB   0.19%     4.07kB / 2.37kB   0B / 4.1kB   17

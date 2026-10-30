@@ -1,0 +1,4 @@
+IMAGE                     ID             DISK USAGE   CONTENT SIZE   EXTRA
+dev-workstation-web:1.0   226b571ef8dc       93.6MB         26.3MB        
+hello-world:latest        c567b231f656       25.9kB         9.49kB   U    
+my-nginx:latest           685d15719dca       93.6MB         26.3MB   U    
