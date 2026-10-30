@@ -7,10 +7,10 @@
 ## 2. 실행 환경
 | 항목 | 값 |
 |---|---|
-| OS | (예: macOS 15 / Ubuntu 22.04) |
-| Shell / Terminal | (예: zsh / Terminal.app) |
-| Docker | (`docker --version` 결과) |
-| Git | (`git --version` 결과) |
+| OS | (Windows 버전: 10.0.26300.9711) |
+| Shell / Terminal | (PowerShell / 명령프롬프트) |
+| Docker | (Docker version 29.9.2, build a82e528) |
+| Git | (git version 2.56.0.windows.4) |
 
 ## 3. 수행 체크리스트
 - [ ] 터미널 기본 조작
