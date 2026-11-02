@@ -242,9 +242,9 @@ docker logs dev-web
 결과 위치:
 
 - [logs/docker-logs.txt](logs/docker-logs.txt)
+`docker logs`는 이미 존재하는 컨테이너에서 로그를 읽습니다. 컨테이너가 없으면 `No such container`가 나오며 로그를 만들지 않습니다. 현재 [logs/docker-logs.txt](logs/docker-logs.txt)는 제출자가 제공한 오류 출력 기록이며 성공 로그가 아닙니다.
 
-
-먼저 컨테이너 이름과 상태를 확인합니다.
+먼저 컨테이너 이름과 상태를 확인합니다. PowerShell에서 오류 메시지까지 저장하려면 `>` 대신 `*>`를 사용합니다.
 
 ```powershell
 docker ps -a --filter "name=^/dev-web$"
@@ -419,14 +419,21 @@ VSCode에서 GitHub 계정 로그인을 완료하고 저장소와 연동했다.
 
 ### 권한 비트 증거 추가
 
-Linux/WSL에서 다음 명령을 실행하고 출력 결과를 `logs/permissions.txt`에 기록합니다. `rwx`는 읽기/쓰기/실행을 뜻하며 숫자 표기는 읽기 4, 쓰기 2, 실행 1의 합을 사용자/그룹/기타 순서로 씁니다. `755`는 사용자 `rwx`, 그룹과 기타 `r-x`입니다. HTML 파일은 실행 권한이 필요 없으므로 예시에서는 `644`를 사용합니다.
+`/mnt/c/...`, `chmod`, Linux의 `ls -l`은 PowerShell 명령이 아닙니다. PowerShell에서 WSL을 실행해 Linux 명령을 전달합니다. 다음 한 줄은 WSL에서 권한을 설정하고 `ls -l` 결과를 프로젝트의 `logs/permissions.txt`에 저장합니다.
 
-```bash
+```powershell
 wsl --exec bash -lc 'cd /mnt/c/dev/dev-workstation && chmod 644 app/index.html && ls -l app/index.html' | Tee-Object -FilePath logs/permissions.txt
 ```
 
-[logs/permissions.txt](logs/permissions.txt)
+또는 먼저 `wsl`을 입력해 Linux 셸에 들어간 뒤 다음을 실행합니다.
 
+```bash
+cd /mnt/c/dev/dev-workstation
+chmod 644 app/index.html
+ls -l app/index.html
+```
+
+`rwx`는 읽기/쓰기/실행을 뜻하며 숫자 표기는 읽기 4, 쓰기 2, 실행 1의 합을 사용자/그룹/기타 순서로 씁니다. `755`는 사용자 `rwx`, 그룹과 기타 `r-x`입니다. HTML 파일은 실행 권한이 필요 없으므로 예시에서는 `644`를 사용합니다. Windows 드라이브(`/mnt/c`)의 권한 표시는 WSL 마운트 설정에 따라 달라질 수 있으므로, 실행 후 `ls -l` 출력이 실제로 생성됐는지 확인합니다. 제출 당시 아직 권한 출력 증거는 추가되지 않았습니다.
 ## 11. 트러블슈팅
 
 ### 문제 1. Docker 명령 실행 시 권한 오류 발생
