@@ -422,9 +422,7 @@ VSCode에서 GitHub 계정 로그인을 완료하고 저장소와 연동했다.
 Linux/WSL에서 다음 명령을 실행하고 출력 결과를 `logs/permissions.txt`에 기록합니다. `rwx`는 읽기/쓰기/실행을 뜻하며 숫자 표기는 읽기 4, 쓰기 2, 실행 1의 합을 사용자/그룹/기타 순서로 씁니다. `755`는 사용자 `rwx`, 그룹과 기타 `r-x`입니다. HTML 파일은 실행 권한이 필요 없으므로 예시에서는 `644`를 사용합니다.
 
 ```bash
-cd /mnt/c/dev/dev-workstation
-chmod 644 app/index.html
-ls -l app/index.html
+wsl --exec bash -lc 'cd /mnt/c/dev/dev-workstation && chmod 644 app/index.html && ls -l app/index.html' | Tee-Object -FilePath logs/permissions.txt
 ```
 
 이 출력 증거는 아직 추가되지 않았습니다.
