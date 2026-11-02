@@ -17,6 +17,7 @@ Github과 Codyssey를 연동하기 위해 만들어진 Repository입니다.
 - 바인드 마운트 변경 반영 확인
 - Docker 볼륨 영속성 확인
 - Git 설정 및 GitHub / VSCode 연동 확인
+
 작업 디렉터리는 `C:\dev\dev-workstation`입니다. PowerShell에서는 저장소 루트에서 명령을 실행합니다.
 
 ```powershell
@@ -80,7 +81,7 @@ docker info
 | 항목 | 완료 여부 | 증거 |
 |---|---:|---|
 | 터미널 명령 실행 | ✅ | README 명령 로그 |
-| 권한 확인 | ✅ | [permissions.txt](logs/logs/permissions.txt) |
+| 권한 확인 | ✅ | [permissions.txt](logs/permissions.txt) |
 | Docker 설치 확인 | ✅ | [docker-version.txt](logs/docker-version.txt) |
 | Docker 정보 확인 | ✅ | [docker-info.txt](logs/docker-info.txt) |
 | hello-world 실행 | ✅ | [hello-world.txt](logs/hello-world.txt) |
@@ -175,7 +176,9 @@ docker build -t dev-workstation-web:1.0 .
 
 ```powershell
 docker build --no-cache --progress=plain -t dev-workstation-web:1.0 .
-```### 이미지 확인
+```
+
+### 이미지 확인
 
 ```bash
 docker images
@@ -225,7 +228,9 @@ http://localhost:8080
 curl.exe -sS -o NUL -w "HTTP %{http_code}`n" http://localhost:8080
 ```
 
-정상 응답은 `HTTP 200`입니다.접속 성공 화면:
+정상 응답은 `HTTP 200`입니다.
+
+접속 성공 화면:
 
 ![포트 매핑 접속 성공](screenshots/port-access.png)
 
@@ -242,6 +247,7 @@ docker logs dev-web
 결과 위치:
 
 - [logs/docker-logs.txt](logs/docker-logs.txt)
+
 `docker logs`는 이미 존재하는 컨테이너에서 로그를 읽습니다. 컨테이너가 없으면 `No such container`가 나오며 로그를 만들지 않습니다. 현재 [logs/docker-logs.txt](logs/docker-logs.txt)는 제출자가 제공한 오류 출력 기록이며 성공 로그가 아닙니다.
 
 먼저 컨테이너 이름과 상태를 확인합니다. PowerShell에서 오류 메시지까지 저장하려면 `>` 대신 `*>`를 사용합니다.
