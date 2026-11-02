@@ -1,5 +1,4 @@
-CONTAINER ID   IMAGE                     COMMAND                   CREATED             STATUS                         PORTS                                     NAMES
-bd8d33d59ded   dev-workstation-web:1.0   "/docker-entrypoint.…"   16 minutes ago      Up 4 minutes (healthy)         80/tcp                                    dev-web
-660372fe195d   hello-world               "/hello"                  33 minutes ago      Exited (0) 33 minutes ago                                                silly_galileo
-1328b30bbe71   my-nginx                  "/docker-entrypoint.…"   34 minutes ago      Up 5 minutes (healthy)         0.0.0.0:8080->80/tcp, [::]:8080->80/tcp   quirky_wilson
-1de574d53c0c   hello-world               "/hello"                  About an hour ago   Exited (0) About an hour ago                                             epic_nobel
+CONTAINER ID   IMAGE                             COMMAND                   CREATED          STATUS                             PORTS                                     NAMES
+a62c131ded51   dev-workstation-web:1.0           "/docker-entrypoint.…"   19 seconds ago   Up 17 seconds (health: starting)   0.0.0.0:8080->80/tcp, [::]:8080->80/tcp   dev-web
+f3ac8cd8bf57   dev-workstation-web:1.0           "/docker-entrypoint.…"   18 hours ago     Exited (255) 3 minutes ago         0.0.0.0:8080->80/tcp                      developer-web
+145e5e4e9b00   docker/welcome-to-docker:latest   "/docker-entrypoint.…"   18 hours ago     Exited (255) 3 minutes ago         0.0.0.0:8088->80/tcp                      welcome-to-docker
