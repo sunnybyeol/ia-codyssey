@@ -1,89 +1,425 @@
-# Dev Workstation 구축 결과
+# ia-codyssey
+Github과 Codyssey를 연동하기 위해 만들어진 Repository입니다.
 
-Docker 기반 정적 웹 서버를 빌드하고 실행한 개발 워크스테이션 구축 기록입니다. 명령은 저장소 루트 `C:\dev\dev-workstation`에서 실행합니다. Docker Desktop이 실행 중이어야 하며, 필요한 이미지가 없으면 Docker Hub 접근이 필요합니다.
+프로젝트 개요
+# sunnybyeol Workstation 구축 결과
 
-## 제출 증거 요약
+## 1. 프로젝트 개요
 
-| 목적 | 명령 / 확인 결과 | 증거 |
-|---|---|---|
-| Docker 버전 및 데몬 | `docker --version`, `docker info` (Context: `desktop-linux`) | [버전 로그](logs/docker-version.txt), [info 로그](logs/docker-info.txt) |
-| 이미지 빌드 및 컨테이너 확인 | `docker build -t dev-workstation-web:1.0 .`, `docker images`, `docker ps -a` | 아래 빌드 로그, [이미지 목록](logs/docker-images.txt), [컨테이너 목록](logs/docker-ps-a.txt) |
-| 웹 접속 및 바인드 마운트 | `http://localhost:8080`, `http://localhost:8081` | [포트 접속](screenshots/port-access.png), [변경 전](screenshots/bind-before.png), [변경 후](screenshots/bind-after.png) |
-| 볼륨 영속성 | 쓰기 컨테이너 삭제 후 새 컨테이너에서 `volume persistence test` 읽기 | [볼륨 증거](screenshots/volume-proof.png) |
-| 저장소 업로드 | `origin`은 `https://github.com/sunnybyeol/dev-workstation.git`, 최근 커밋 `5600415b4e9f818a088d6afb469284a4b2cddd09` | `git remote -v`, `git log -1`로 재확인 가능 |
-| 권한 변경, hello-world | 아래 재현 절차 참조. 이 환경에서는 Docker 데몬 접근이 거부되어 아직 새 실행 로그를 만들지 못함 | 제출 전 실행 결과를 각각 `logs/permissions.txt`, `logs/hello-world.txt`에 저장해야 함 |
+이 저장소는 개발 워크스테이션 구축 과제 제출용 저장소이다.
 
-> 기존 증거 파일은 2026-11-02 평가 보완 작업 시점에 검토했습니다. 각 기록의 실제 실행 시각은 원본 로그에 없으므로 소급해 만들어 넣지 않았습니다. 새로 만드는 로그에는 실행 시각을 함께 기록하세요.
+주요 목표는 다음과 같다.
 
-## 프로젝트 구조
-
-```text
-.
-├── Dockerfile             # nginx 기반 이미지와 헬스체크 정의
-├── app/index.html         # 바인드 마운트로 제공하는 페이지
-├── site/index.html        # Dockerfile 빌드에 복사되는 페이지
-├── logs/                  # 명령 출력 기록
-├── screenshots/           # 브라우저 및 볼륨 증거
-└── README.md              # 재현 절차와 결과 요약
-```
-
-## 이미지와 컨테이너
-
-이미지는 Dockerfile과 파일을 바탕으로 만든 변경 불가 템플릿이며, 여기서는 `dev-workstation-web:1.0`이 nginx와 `site/index.html`을 담습니다. 컨테이너는 그 이미지로 실행한 독립 인스턴스입니다. 컨테이너를 실행해도 이미지 자체는 바뀌지 않고, 컨테이너 내부에서 한 변경은 해당 컨테이너를 삭제하면 사라질 수 있습니다. 여러 컨테이너를 같은 이미지에서 만들 수 있습니다.
-
-## 빌드 및 웹 서버 실행
-
-저장소 루트에서 실행합니다. Dockerfile의 `COPY site/ ...`가 `site/index.html`을 이미지에 넣습니다.
+- 터미널 환경 확인
+- Docker 설치 및 운영 명령 검증
+- Dockerfile 기반 웹 서버 컨테이너 실행
+- 포트 매핑을 통한 웹 접속 확인
+- 바인드 마운트 변경 반영 확인
+- Docker 볼륨 영속성 확인
+- Git 설정 및 GitHub / VSCode 연동 확인
+작업 디렉터리는 `C:\dev\dev-workstation`입니다. PowerShell에서는 저장소 루트에서 명령을 실행합니다.
 
 ```powershell
 Set-Location C:\dev\dev-workstation
+```
+
+프로젝트 구조:
+
+```text
+dev-workstation/
+├── Dockerfile       # nginx 이미지 빌드 설정
+├── app/             # 바인드 마운트 테스트용 웹 페이지
+├── site/            # 이미지 빌드에 포함되는 웹 페이지
+├── logs/            # 명령 출력 로그
+├── screenshots/     # 검증 화면 캡처
+└── README.md        # 실행 절차와 결과
+```
+
+---
+
+## 2. 실행 환경
+
+| 항목 | 내용 |
+|---|---|
+| OS | Windows 11 |
+| Shell | PowerShell / zsh / bash |
+| Terminal | Windows Terminal / VSCode Terminal |
+| Docker Version | Docker version 29.9.2, build a82e528 |
+| Git Version | git version 2.56.0.windows.4 |
+
+### Docker 버전 확인
+
+```bash
+docker --version
+```
+
+결과:
+
+```text
+Docker version 29.9.2, build a82e528
+```
+
+로그 파일:
+
+- [logs/docker-version.txt](logs/docker-version.txt)
+
+### Docker info 확인
+
+```bash
+docker info
+```
+
+결과 위치:
+
+- [logs/docker-info.txt](logs/docker-info.txt)
+
+---
+
+## 3. 수행 항목 체크리스트
+
+| 항목 | 완료 여부 | 증거 |
+|---|---:|---|
+| 터미널 명령 실행 | ✅ | README 명령 로그 |
+| 권한 확인 | 증거 추가 필요 | [권한 출력 추가 예정](logs/permissions.txt) |
+| Docker 설치 확인 | ✅ | [docker-version.txt](logs/docker-version.txt) |
+| Docker 정보 확인 | ✅ | [docker-info.txt](logs/docker-info.txt) |
+| hello-world 실행 | 증거 추가 필요 | [실행 로그 추가 예정](logs/hello-world.txt) |
+| Dockerfile 작성 | ✅ | [Dockerfile](Dockerfile) |
+| 웹 서버 소스코드 작성 | ✅ | [app/index.html](app/index.html) |
+| 이미지 빌드 | ✅ | [docker-images.txt](logs/docker-images.txt) |
+| 컨테이너 실행 | ✅ | [docker-ps-a.txt](logs/docker-ps-a.txt) |
+| 포트 매핑 접속 | ✅ | [port-access.png](screenshots/port-access.png) |
+| 바인드 마운트 검증 | ✅ | [bind-before.png](screenshots/bind-before.png), [bind-after.png](screenshots/bind-after.png) |
+| Docker 볼륨 검증 | ✅ | [volume-proof.png](screenshots/volume-proof.png) |
+| Git 설정 | ✅ | git config 결과 |
+| GitHub 저장소 업로드 | ✅ | GitHub Repository |
+| VSCode GitHub 연동 | ✅ | [vscode-github-login.png](screenshots/vscode-github-login.png) |
+
+---
+
+## 4. Dockerfile 기반 웹 서버
+
+### Dockerfile
+
+Dockerfile은 nginx 기반 이미지에 `site/`를 복사하고 헬스체크를 설정합니다. 바인드 마운트 검증에서는 별도로 `app/`을 연결합니다.
+
+```dockerfile
+FROM nginx:alpine
+LABEL org.opencontainers.image.title="my-custom-nginx"
+LABEL org.opencontainers.image.authors="sunnybyeol"
+ENV APP_ENV=dev
+COPY site/ /usr/share/nginx/html/
+HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://localhost/ > /dev/null || exit 1
+EXPOSE 80
+```
+
+이미지는 Dockerfile과 파일을 묶은 실행 템플릿이고, 컨테이너는 그 이미지로 실행한 인스턴스입니다. 이미지를 빌드해도 컨테이너가 자동 생성되지는 않으며, 한 이미지에서 여러 컨테이너를 실행할 수 있습니다.
+
+### 웹 서버 소스코드
+
+- [app/index.html](app/index.html)
+
+---
+
+## 5. Docker 빌드 및 실행 로그
+
+### 이미지 빌드
+
+```bash
 docker build -t dev-workstation-web:1.0 .
-docker images
-docker run -d --name dev-web -p 8080:80 dev-workstation-web:1.0
-docker ps -a
 ```
 
-기존 `dev-web` 이름이 사용 중이면 먼저 확인합니다. 필요한 컨테이너인지 확인한 뒤에만 중지/삭제하세요.
+결과:
 
-```powershell
-docker ps -a --filter "name=^/dev-web$"
-docker stop dev-web
-docker rm dev-web
+```text
+[+] Building 6.2s (8/8) FINISHED                                             docker:desktop-linux
+ => [internal] load build definition from Dockerfile                                         0.0s
+ => => transferring dockerfile: 716B                                                         0.0s
+ => [internal] load metadata for docker.io/library/nginx:alpine                              2.0s
+ => [auth] library/nginx:pull token for registry-1.docker.io                                 0.0s
+ => [internal] load .dockerignore                                                            0.0s
+ => => transferring context: 2B                                                              0.0s
+ => [internal] load build context                                                            0.0s
+ => => transferring context: 354B                                                            0.0s
+ => [1/2] FROM docker.io/library/nginx:alpine@sha256:785835ea65db4bba6f021acc0f3be91b0fef76  3.0s
+ => => resolve docker.io/library/nginx:alpine@sha256:785835ea65db4bba6f021acc0f3be91b0fef76  0.0s
+ => => sha256:b9b388a21ecfde6ac80505f23f527146a2129dfb104e79b029bbd00d4cc 20.53MB / 20.53MB  2.5s
+ => => sha256:9b0f7dfe35b2711a17f60dadd6d4035dc0cdee152538cc5c0987029e94679 1.40kB / 1.40kB  0.4s
+ => => sha256:2ec5fb117ffa9a78b15fb6a78745ffc569c8da0aee9f36ace4cd67a44b1fe 1.21kB / 1.21kB  0.6s
+ => => sha256:26185d08a3ec318dd85a6c9f2172e714ec13cececd7f33c533b40b1689f9fedb 404B / 404B   0.6s
+ => => sha256:7cc330898115ce55acccb0cc1e7dd091df4410c8c5f3c540710ee0ac689f5fcb 964B / 964B   0.2s
+ => => sha256:657023555a2a19dc6036468198bb350d2c7feaac7f2d0a3901b4dd3cb25e40c5 629B / 629B   0.2s
+ => => sha256:12b85cff06fd7d383d36a9c96503fe049c9d4bf3dfda5cbb9ffa6ae99b9c0 1.94MB / 1.94MB  0.8s
+ => => sha256:7b229517ed222597277036d94892173207d01a731ab3a88eeb1de2e963a2c 3.85MB / 3.85MB  1.3s
+ => => extracting sha256:7b229517ed222597277036d94892173207d01a731ab3a88eeb1de2e963a2c788    0.2s
+ => => extracting sha256:12b85cff06fd7d383d36a9c96503fe049c9d4bf3dfda5cbb9ffa6ae99b9c07a6    0.2s
+ => => extracting sha256:657023555a2a19dc6036468198bb350d2c7feaac7f2d0a3901b4dd3cb25e40c5    0.0s
+ => => extracting sha256:7cc330898115ce55acccb0cc1e7dd091df4410c8c5f3c540710ee0ac689f5fcb    0.0s
+ => => extracting sha256:26185d08a3ec318dd85a6c9f2172e714ec13cececd7f33c533b40b1689f9fedb    0.0s
+ => => extracting sha256:2ec5fb117ffa9a78b15fb6a78745ffc569c8da0aee9f36ace4cd67a44b1fef79    0.0s
+ => => extracting sha256:9b0f7dfe35b2711a17f60dadd6d4035dc0cdee152538cc5c0987029e94679548    0.0s
+ => => extracting sha256:b9b388a21ecfde6ac80505f23f527146a2129dfb104e79b029bbd00d4cc1a919    0.4s
+ => [2/2] COPY site/ /usr/share/nginx/html/                                                  0.1s
+ => exporting to image                                                                       0.9s
+ => => exporting layers                                                                      0.1s
+ => => exporting manifest sha256:23bb47b0b9903edb2c245537ec19d0de4bd634321c5616a0425ba122c8  0.0s
+ => => exporting config sha256:b142d052a60e923a7ba4278677f46b3a2d3ee3a07c4b25fccbcd729274d8  0.0s
+ => => exporting attestation manifest sha256:41fa0e8307391611e5181daead79986f86f3c4f1774caf  0.0s
+ => => exporting manifest list sha256:ebde0a34a20f6d75fa84f43ec5a794ff24e2d236ca95734ee6d29  0.0s
+ => => naming to docker.io/library/dev-workstation-web:1.0                                   0.0s
+ => => unpacking to docker.io/library/dev-workstation-web:1.0                                0.8s
 ```
 
-빌드에 실패하면 저장소 루트에서 실행했는지, `Dockerfile`과 `site/index.html`이 있는지 확인한 뒤 전체 빌드 출력을 살펴보세요. 캐시 문제를 의심할 때는 다음처럼 다시 빌드할 수 있습니다.
+
+빌드가 실패하면 저장소 루트에서 실행했는지와 `Dockerfile`, `site/index.html`이 있는지 확인하고 전체 오류 출력을 살펴봅니다. 캐시를 제외해 다시 빌드하려면 다음 명령을 사용합니다.
 
 ```powershell
 docker build --no-cache --progress=plain -t dev-workstation-web:1.0 .
+```### 이미지 확인
+
+```bash
+docker images
 ```
 
-빌드 로그에 오류가 있으면 마지막 오류뿐 아니라 그 직전 단계의 출력도 확인합니다. 이미지 목록과 컨테이너 목록은 서로 다른 시점의 기록일 수 있으므로, 새로 저장할 때 명령과 실행 시각을 같이 적으세요.
+결과 위치:
 
-## 포트 매핑과 네트워크
+- [logs/docker-images.txt](logs/docker-images.txt)
 
-접속 주소는 `http://localhost:8080`이며, `-p 8080:80`은 호스트의 8080 포트를 컨테이너의 80 포트에 연결합니다. 컨테이너는 기본적으로 별도의 네트워크 네임스페이스를 사용하므로 컨테이너 안의 포트가 호스트에 자동으로 공개되지 않습니다. Docker가 포트 게시 규칙을 설정하면 호스트 요청이 컨테이너의 80번 포트로 전달됩니다.
+### 컨테이너 실행
 
-브라우저 증거 외에 HTTP 상태 코드도 확인할 수 있습니다.
+```bash
+docker run -d --name dev-web -p 8080:80 dev-workstation-web:1.0
+```
+
+### 컨테이너 확인
+이미지는 빌드 산출물, 컨테이너 목록은 이미지로 생성한 실행 인스턴스 상태를 보여줍니다. 재수집할 때는 명령과 시각을 함께 기록합니다.
+
+```bash
+docker ps -a
+```
+
+결과 위치:
+
+- [logs/docker-ps-a.txt](logs/docker-ps-a.txt)
+
+---
+
+## 6. 포트 매핑 접속 증거
+
+컨테이너 실행 시 다음 옵션을 사용했다.
+
+```bash
+-p 8080:80
+```
+
+브라우저 접속 주소:
+
+```text
+http://localhost:8080
+```
+
+
+컨테이너는 별도 네트워크 네임스페이스를 사용하므로 호스트에서 컨테이너 포트에 자동으로 접근할 수 없습니다. `-p 8080:80`은 호스트의 8080번 포트 요청을 컨테이너의 80번 포트로 전달하도록 Docker에 설정합니다. HTTP 상태 코드도 확인합니다.
 
 ```powershell
 curl.exe -sS -o NUL -w "HTTP %{http_code}`n" http://localhost:8080
 ```
 
-정상 응답은 `HTTP 200`입니다. 포트 충돌 시 `docker ps -a`로 컨테이너를 확인하고, Windows에서는 `Get-NetTCPConnection -LocalPort 8080` 또는 `netstat -ano | findstr :8080`으로 점유 프로세스를 찾을 수 있습니다. Linux/WSL에서는 `ss -ltnp` 또는 `lsof -i :8080`을 사용할 수 있습니다.
+정상 응답은 `HTTP 200`입니다.접속 성공 화면:
 
-## 바인드 마운트
+![포트 매핑 접속 성공](screenshots/port-access.png)
 
-바인드 마운트는 호스트의 `app` 디렉터리를 컨테이너의 nginx 웹 루트에 읽기 전용으로 연결합니다. `Dockerfile` 빌드에는 `site`가 사용되고, 이 검증에서는 호스트의 `app`이 사용됩니다.
+---
 
-```powershell
-docker run -d --name dev-web-bind -p 8081:80 -v "${PWD}/app:/usr/share/nginx/html:ro" nginx:alpine
+## 7. Docker 운영 명령 실행 기록
+
+### docker logs
+
+```bash
+docker logs dev-web
 ```
 
-Windows PowerShell, WSL, Linux/macOS는 경로 표기와 Docker Desktop 파일 공유 설정이 다릅니다. Windows 경로는 PowerShell의 `${PWD}`를 사용할 수 있고, WSL에서는 WSL 내부 경로(예: `/mnt/c/dev/dev-workstation/app`)를 사용하세요. 해당 경로가 Docker Desktop에서 공유/접근 가능한지도 확인합니다. 폴더를 옮기면 상대 경로 기준 디렉터리를 다시 확인하세요.
+결과 위치:
 
-## 파일 권한 확인 증거 보완
+- [logs/docker-logs.txt](logs/docker-logs.txt)
+`docker logs`는 이미 존재하는 컨테이너에서 로그를 읽습니다. 컨테이너가 없으면 `No such container`가 나오며 로그를 만들지 않습니다. 현재 [logs/docker-logs.txt](logs/docker-logs.txt)는 제출자가 제공한 오류 출력 기록이며 성공 로그가 아닙니다.
 
-Windows NTFS 권한과 Linux의 `rwx` 모드는 같은 표기가 아닙니다. Linux/WSL에서 다음을 실행하고 출력 전체를 `logs/permissions.txt`에 기록하세요. 아래 명령은 `app/index.html`의 소유자 읽기/쓰기, 그룹 및 기타 사용자 읽기 권한(644)을 설정하고 `ls -l`로 증명합니다.
+먼저 컨테이너 이름과 상태를 확인합니다. PowerShell에서 오류 메시지까지 저장하려면 `>` 대신 `*>`를 사용합니다.
+
+```powershell
+docker ps -a --filter "name=^/dev-web$"
+docker logs dev-web *> logs/docker-logs.txt
+```
+
+컨테이너가 없고 새로 실행해야 한다면 Docker 데몬 연결과 이미지 존재를 확인한 뒤 실행합니다.
+
+```powershell
+docker info
+docker images
+docker run -d --name dev-web -p 8080:80 dev-workstation-web:1.0
+docker logs dev-web *> logs/docker-logs.txt
+```
+
+### docker stats
+
+```bash
+docker stats --no-stream
+```
+
+결과 위치:
+
+- [logs/docker-stats.txt](logs/docker-stats.txt)
+
+---
+
+## 8. 바인드 마운트 검증
+
+### 실행 명령
+
+```bash
+docker rm -f dev-web
+docker run -d --name dev-web-bind -p 8081:80 -v "$PWD/app:/usr/share/nginx/html:ro" nginx:alpine
+```
+
+
+PowerShell에서 `${PWD}`는 현재 폴더를 뜻합니다. WSL에서는 `/mnt/c/dev/dev-workstation/app` 같은 Linux 경로를 사용합니다. 운영체제에 따른 경로 표기와 Docker Desktop의 파일 공유 설정을 확인합니다.
+
+### 변경 전
+
+![바인드 마운트 변경 전](screenshots/bind-before.png)
+
+### 호스트 파일 수정
+
+수정 파일:
+
+- [app/index.html](app/index.html)
+
+수정 내용 예시:
+
+```html
+<h1>바인드 마운트 변경 반영 성공</h1>
+```
+
+### 변경 후
+
+![바인드 마운트 변경 후](screenshots/bind-after.png)
+
+### 검증 결과
+
+이미지를 다시 빌드하지 않고도 호스트의 `app/index.html` 변경사항이 컨테이너에서 제공하는 웹 페이지에 반영되는 것을 확인했다.
+
+---
+
+## 9. Docker 볼륨 영속성 검증
+
+### 볼륨 생성
+
+```bash
+docker volume create dev-volume
+```
+
+### 볼륨에 데이터 작성
+
+```bash
+docker run --name volume-test -v dev-volume:/data alpine sh -c "echo 'volume persistence test' > /data/result.txt && cat /data/result.txt"
+```
+
+### 컨테이너 삭제
+
+```bash
+docker rm volume-test
+```
+
+### 새 컨테이너에서 데이터 확인
+
+```bash
+docker run --rm -v dev-volume:/data alpine cat /data/result.txt
+```
+
+결과:
+
+```text
+volume persistence test
+```
+
+증거:
+
+![Docker 볼륨 영속성 검증](screenshots/volume-proof.png)
+
+볼륨은 컨테이너와 별도로 보관되지만 볼륨 자체를 삭제하면 데이터가 사라집니다. 중요한 데이터는 별도 아카이브로 백업하고 필요하면 복원합니다.
+
+```powershell
+docker run --rm -v dev-volume:/data -v "${PWD}:/backup" alpine tar czf /backup/dev-volume-backup.tgz -C /data .
+docker volume create dev-volume-restore
+docker run --rm -v dev-volume-restore:/data -v "${PWD}:/backup" alpine tar xzf /backup/dev-volume-backup.tgz -C /data
+```
+
+---
+
+## 10. Git 설정 및 GitHub / VSCode 연동
+
+### Git 버전 확인
+
+```bash
+git --version
+```
+
+결과:
+
+```text
+git version 2.56.0.windows.4
+```
+
+### Git 사용자 정보 설정
+
+```bash
+git config --global user.name "GitHub sunnybyeol"
+git config --global user.email "GitHub noreply witch_jh@naver.com"
+git config --global init.defaultBranch main
+```
+
+### Git 설정 확인
+
+```bash
+git config --global --list
+```
+
+결과:
+
+```text
+user.name=GitHub sunnybyeol
+user.email=witch_jh@naver.com
+init.defaultbranch=main
+```
+
+
+원격 저장소 주소와 마지막 커밋을 확인합니다.
+
+```powershell
+git remote -v
+git log -1 --format="%H %cs %s"
+```
+
+마지막 확인 주소는 `https://github.com/sunnybyeol/dev-workstation.git`, 커밋 해시는 `5600415b4e9f818a088d6afb469284a4b2cddd09`입니다. 이후 push 결과는 실제 명령 출력으로 갱신합니다.
+
+### VSCode GitHub 연동
+
+VSCode에서 GitHub 계정 로그인을 완료하고 저장소와 연동했다.
+
+증거:
+
+![VSCode GitHub 연동](screenshots/vscode-github-login.png)
+
+주의:
+
+- 비밀번호, 토큰, 인증 코드 등 민감정보는 캡처하지 않았다.
+
+---
+
+
+### 권한 비트 증거 추가
+
+Linux/WSL에서 다음 명령을 실행하고 출력 결과를 `logs/permissions.txt`에 기록합니다. `rwx`는 읽기/쓰기/실행을 뜻하며 숫자 표기는 읽기 4, 쓰기 2, 실행 1의 합을 사용자/그룹/기타 순서로 씁니다. `755`는 사용자 `rwx`, 그룹과 기타 `r-x`입니다. HTML 파일은 실행 권한이 필요 없으므로 예시에서는 `644`를 사용합니다.
 
 ```bash
 cd /mnt/c/dev/dev-workstation
@@ -91,69 +427,109 @@ chmod 644 app/index.html
 ls -l app/index.html
 ```
 
-`rwx`는 각각 읽기(read), 쓰기(write), 실행(execute) 비트입니다. 숫자 표기는 읽기=4, 쓰기=2, 실행=1의 합을 소유자/그룹/기타 사용자 순서로 씁니다. 예를 들어 `755`는 소유자 `rwx`, 그룹과 기타 사용자는 `r-x`입니다. 일반 HTML 파일은 보통 실행 비트가 필요 없으므로 이 예제에서는 `644`를 사용합니다.
+이 출력 증거는 아직 추가되지 않았습니다.
+## 11. 트러블슈팅
 
-## hello-world 증거 보완
+### 문제 1. Docker 명령 실행 시 권한 오류 발생
 
-아래를 실행하고 명령과 전체 결과를 `logs/hello-world.txt`에 저장하세요. `Hello from Docker!`와 완료 안내가 출력되면 성공입니다.
+문제:
 
-```powershell
-$stamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"
-"# 실행 시각: $stamp`n# 목적: Docker 데몬 및 이미지 실행 확인`n> docker run --rm hello-world" | Set-Content logs/hello-world.txt
-docker run --rm hello-world 2>&1 | Tee-Object -FilePath logs/hello-world.txt -Append
+```text
+permission denied while trying to connect to the Docker daemon socket
 ```
 
-현재 확인 과정에서 `docker ps`가 `docker API ... dockerDesktopLinuxEngine` 파이프 접근 거부를 반환했습니다. 따라서 `hello-world`나 `chmod` 실행을 완료했다고 기록하지 않았습니다. Docker Desktop 데몬 연결이 복구된 뒤 위 명령을 실행해 실제 출력 파일을 갱신하세요.
+원인 가설:
 
-## Docker 볼륨 영속성과 백업
+- 현재 사용자가 Docker 데몬에 접근할 권한이 없을 수 있다.
+- Docker Desktop 또는 Docker 데몬이 실행 중이 아닐 수 있다.
 
-볼륨은 컨테이너 생명주기와 분리된 Docker 관리 저장소입니다. 컨테이너 삭제만으로 볼륨 데이터가 지워지지는 않습니다. 볼륨을 지우기 전 백업하고, 복원 시 동일한 볼륨에 아카이브를 풀 수 있습니다.
+확인:
 
-```powershell
-docker volume create dev-volume
-docker run --rm -v dev-volume:/data alpine sh -c "echo 'volume persistence test' > /data/result.txt"
-docker run --rm -v dev-volume:/data alpine cat /data/result.txt
-# 백업 (현재 폴더에 dev-volume-backup.tgz 생성)
-docker run --rm -v dev-volume:/data -v "${PWD}:/backup" alpine tar czf /backup/dev-volume-backup.tgz -C /data .
-# 복원 (빈 대상 볼륨 권장)
-docker volume create dev-volume-restore
-docker run --rm -v dev-volume-restore:/data -v "${PWD}:/backup" alpine tar xzf /backup/dev-volume-backup.tgz -C /data
-```
-
-볼륨 백업 아카이브는 컨테이너와 별도 위치에 보관하세요. 이 예제는 복원 명령을 문서화한 절차이며 현재 복구 실행 증거를 뜻하지 않습니다.
-
-## Docker 로그와 데몬 상태
-
-`docker info`의 기존 기록은 [logs/docker-info.txt](logs/docker-info.txt)에 있습니다. 검토 시 클라이언트 버전 `29.9.2`, Context `desktop-linux`가 기록되어 있습니다. 데몬 연결 여부와 서버 버전, 저장소/런타임 상태는 `docker info`의 Server 섹션에서 확인합니다. 연결이 실패하면 데몬 상태를 확인할 수 없으므로 Docker Desktop을 시작하고 명령을 다시 실행합니다.
-
-```powershell
+```bash
 docker info
-docker logs dev-web
-docker stats --no-stream
 ```
 
-각 명령의 최신 출력은 [logs](logs/)에 저장합니다. 현재 `docker-logs.txt`는 비어 있으므로 최신 로그를 다시 캡처해야 합니다.
+해결:
 
-## Git 및 GitHub
+- Docker Desktop을 실행했다.
+- Linux 환경에서는 필요한 경우 사용자를 docker 그룹에 추가한다.
 
-저장소: <https://github.com/sunnybyeol/dev-workstation>
+```bash
+sudo usermod -aG docker $USER
+```
 
-원격 주소와 마지막 커밋을 확인하는 명령:
+이후 터미널을 재시작하고 다시 확인했다.
+
+```bash
+docker info
+```
+
+---
+
+### 문제 2. 포트가 이미 사용 중이어서 컨테이너 실행 실패
+
+문제:
+
+```text
+Bind for 0.0.0.0:8080 failed: port is already allocated
+```
+
+원인 가설:
+
+- 기존 컨테이너 또는 다른 프로세스가 8080 포트를 사용 중일 수 있다.
+
+확인:
+
+```bash
+docker ps -a
+```
+
+해결:
+
+기존 컨테이너를 삭제하거나 다른 포트를 사용했다.
+
+```bash
+docker rm -f dev-web
+docker run -d --name dev-web -p 8081:80 dev-workstation-web:1.0
+```
+
+대안:
+
+```text
+http://localhost:8081
+```
+
+로 접속한다.
+
+---
+
+
+---
+
+### 문제 3. 컨테이너 로그 확인 시 컨테이너를 찾지 못함
+
+오류:
+
+```text
+Error response from daemon: No such container: dev-web
+```
+
+원인:
+
+- `dev-web`이라는 이름의 컨테이너가 없거나 다른 이름으로 실행 중입니다.
+
+확인:
 
 ```powershell
-git remote -v
-git log -1 --format="%H %cs %s"
-git push -u origin main
+docker ps -a
+docker ps -a --filter "name=^/dev-web$"
 ```
 
-마지막 확인된 커밋은 `5600415b4e9f818a088d6afb469284a4b2cddd09` (`2026-11-02`, `Complete dev workstation setup`)입니다. push 성공 여부는 GitHub 인증 완료 후 터미널의 실제 출력으로 확인하세요. Git 사용자 설정은 `git config --global --list`로 확인합니다. 인증 토큰이나 암호는 로그/스크린샷에 포함하지 않습니다.
+컨테이너가 목록에 없으면 Docker Desktop 데몬 연결과 이미지 존재를 확인한 뒤 `docker run`으로 실행합니다. `docker logs`는 컨테이너를 만들지 않습니다. PowerShell에서 오류까지 파일에 저장하려면 `*>`를 사용합니다.
+## 12. 제출 저장소
 
-## 참고 로그 및 스크린샷
+GitHub Repository:
 
-- Docker 빌드와 이미지: [logs/docker-images.txt](logs/docker-images.txt)
-- 컨테이너 목록: [logs/docker-ps-a.txt](logs/docker-ps-a.txt)
-- Docker 정보와 버전: [logs/docker-info.txt](logs/docker-info.txt), [logs/docker-version.txt](logs/docker-version.txt)
-- 웹 접속: [screenshots/port-access.png](screenshots/port-access.png)
-- 바인드 마운트: [screenshots/bind-before.png](screenshots/bind-before.png), [screenshots/bind-after.png](screenshots/bind-after.png)
-- 볼륨 검증: [screenshots/volume-proof.png](screenshots/volume-proof.png)
-- GitHub 로그인: [screenshots/vscode-github-login.png](screenshots/vscode-github-login.png)
+```text
+https://github.com/sunnybyeol/dev-workstation
+```
