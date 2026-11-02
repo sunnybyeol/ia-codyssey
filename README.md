@@ -80,10 +80,10 @@ docker info
 | 항목 | 완료 여부 | 증거 |
 |---|---:|---|
 | 터미널 명령 실행 | ✅ | README 명령 로그 |
-| 권한 확인 | 증거 추가 필요 | [권한 출력 추가 예정](logs/permissions.txt) |
+| 권한 확인 | (logs/permissions.txt) |
 | Docker 설치 확인 | ✅ | [docker-version.txt](logs/docker-version.txt) |
 | Docker 정보 확인 | ✅ | [docker-info.txt](logs/docker-info.txt) |
-| hello-world 실행 | 증거 추가 필요 | [실행 로그 추가 예정](logs/hello-world.txt) |
+| hello-world 실행 | [실행 로그 추가 예정](logs/hello-world.txt) |
 | Dockerfile 작성 | ✅ | [Dockerfile](Dockerfile) |
 | 웹 서버 소스코드 작성 | ✅ | [app/index.html](app/index.html) |
 | 이미지 빌드 | ✅ | [docker-images.txt](logs/docker-images.txt) |
