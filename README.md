@@ -425,7 +425,8 @@ Linux/WSL에서 다음 명령을 실행하고 출력 결과를 `logs/permissions
 wsl --exec bash -lc 'cd /mnt/c/dev/dev-workstation && chmod 644 app/index.html && ls -l app/index.html' | Tee-Object -FilePath logs/permissions.txt
 ```
 
-이 출력 증거는 아직 추가되지 않았습니다.
+[logs/permissions.txt](logs/permissions.txt)
+
 ## 11. 트러블슈팅
 
 ### 문제 1. Docker 명령 실행 시 권한 오류 발생
