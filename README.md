@@ -421,5 +421,5 @@ http://localhost:8081
 GitHub Repository:
 
 ```text
-https://github.com/사용자명/dev-workstation
+https://github.com/sunnybyeol/dev-workstation
 ```
