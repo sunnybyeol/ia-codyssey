@@ -80,7 +80,7 @@ docker info
 | 항목 | 완료 여부 | 증거 |
 |---|---:|---|
 | 터미널 명령 실행 | ✅ | README 명령 로그 |
-| 권한 확인 | ✅ | [permissions.txt](logs/logs/permissions.txt) |
+| 권한 확인 | ✅ | [permissions.txt](logs/permissions.txt) |
 | Docker 설치 확인 | ✅ | [docker-version.txt](logs/docker-version.txt) |
 | Docker 정보 확인 | ✅ | [docker-info.txt](logs/docker-info.txt) |
 | hello-world 실행 | ✅ | [hello-world.txt](logs/hello-world.txt) |
